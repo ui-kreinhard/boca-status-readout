@@ -16,6 +16,7 @@ import (
 const (
 	ticketCountQuery = "/html/body/table[1]/tbody/tr/td[2]/table/tbody/tr/td[2]/table/tbody/tr[1]/td[2]"
 	readyQuery       = "/html/body/table[1]/tbody/tr[1]/td[1]/table/tbody/tr[1]/td[2]"
+	paperLowQuery    = "/html/body/table[1]/tbody/tr[1]/td[1]/table/tbody/tr[2]/td[2]"
 	paperOutQuery    = "/html/body/table[1]/tbody/tr[1]/td[1]/table/tbody/tr[3]/td[2]"
 	paperJamQuery    = "/html/body/table[1]/tbody/tr[1]/td[1]/table/tbody/tr[4]/td[2]"
 	cutterJamQuery   = "/html/body/table[1]/tbody/tr[1]/td[1]/table/tbody/tr[5]/td[2]"
@@ -27,6 +28,7 @@ type PrinterStatus struct {
 	TicketCount int  `json:"ticket_count"`
 	Ready       bool `json:"ready"`
 	PaperOut    bool `json:"paper_out"`
+	PaperLow    bool `json:"paper_low"`
 	PaperJam    bool `json:"paper_jam"`
 	CutterJam   bool `json:"cutter_jam"`
 }
@@ -70,6 +72,10 @@ func FetchStatusWithTimeout(ip string, timeout time.Duration) (*PrinterStatus, e
 	if err != nil {
 		return nil, err
 	}
+	ps.PaperLow, err = readOutMaintenanceStatus(doc, paperLowQuery)
+	if err != nil {
+		return nil, err
+	}
 	ps.PaperOut, err = readOutMaintenanceStatus(doc, paperOutQuery)
 	if err != nil {
 		return nil, err
@@ -92,6 +98,23 @@ func NewPrinterStatus() *PrinterStatus {
 
 func (ps *PrinterStatus) String() string {
 	return fmt.Sprintf("Ticket count: %d\nReady: %t", ps.TicketCount, ps.Ready)
+}
+
+func (p *PrinterStatus) GetIntStatus() int {
+	ret := 0
+	if p.PaperLow {
+		ret |= 32768
+	}
+	if p.PaperOut {
+		ret |= 16384
+	}
+	if p.PaperJam {
+		ret |= 1024
+	}
+	if !p.Ready {
+		ret |= 512
+	}
+	return ret
 }
 
 func readOutTicketCount(doc *html.Node) (int, error) {
