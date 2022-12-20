@@ -2,6 +2,7 @@ package query
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -98,6 +99,11 @@ func NewPrinterStatus() *PrinterStatus {
 
 func (ps *PrinterStatus) String() string {
 	return fmt.Sprintf("Ticket count: %d\nReady: %t", ps.TicketCount, ps.Ready)
+}
+
+func (ps *PrinterStatus) ToJson() string {
+	ret, _ := json.Marshal(ps)
+	return string(ret)
 }
 
 func (p *PrinterStatus) GetIntStatus() int {
