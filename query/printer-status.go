@@ -1,14 +1,14 @@
 package query
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
@@ -34,37 +34,67 @@ type PrinterStatus struct {
 	CutterJam   bool `json:"cutter_jam"`
 }
 
-func FetchStatus(ip string) (*PrinterStatus, error) {
-	return FetchStatusWithTimeout(ip, 5*time.Second)
+func basicAuth(url string) (io.Reader, error) {
+	var username string = "boca"
+	var passwd string = "printer"
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	req.SetBasicAuth(username, passwd)
+	resp, err := client.Do(req)
+	if err != nil {
+		return req.Body, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, errors.New("401")
+	}
+	return resp.Body, nil
 }
 
-func FetchStatusWithTimeout(ip string, timeout time.Duration) (*PrinterStatus, error) {
-	errChan := make(chan error)
-	respChan := make(chan *html.Node)
-	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, timeout)
+func LoadURL(url string) (*html.Node, error) {
+	r, err := basicAuth(url)
+	if err != nil {
+		return nil, err
+	}
+	return html.Parse(r)
+}
 
-	defer cancel()
+func getPrinterVersion(ip string) (string, error) {
+	doc, err := LoadURL("http://" + ip)
+	if err != nil {
+		return "", err
+	}
+	formTarget, err := readOutByQuery(doc, "//frame/@src")
+	if err != nil {
+		return "", err
+	}
+	switch formTarget {
+	case "gets_protected.cgi":
+		return "R", nil
+	default:
+		return "N", nil
+	}
+}
+
+func buildUrlNew(ip string) string {
+	return fmt.Sprintf("http://%v/realtime.cgi", ip)
+}
+
+func FetchStatus(ip string) (*PrinterStatus, error) {
+	version, err := getPrinterVersion(ip)
+	if err != nil {
+		return nil, err
+	}
+	url := buildUrl(ip)
+	if version == "R" {
+		url = buildUrlNew(ip)
+	}
+	doc, err := LoadURL(url)
+	if err != nil {
+		return nil, err
+	}
 
 	ps := NewPrinterStatus()
-	var doc *html.Node
-	var err error
-	go func() {
-		doc, err := htmlquery.LoadURL(buildUrl(ip))
-		if err != nil {
-			errChan <- err
-			return
-		}
-		respChan <- doc
-	}()
-	select {
-	case err := <-errChan:
-		return nil, err
-	case <-ctx.Done():
-		return nil, errors.New("timeout")
-	case docChan := <-respChan:
-		doc = docChan
-	}
+
 	ps.TicketCount, err = readOutTicketCount(doc)
 	if err != nil {
 		return nil, err

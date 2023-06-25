@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/ui-kreinhard/boca-status-readout/query"
 )
@@ -18,7 +17,7 @@ func main() {
 	if len(os.Args) == 3 {
 		mode = os.Args[2]
 	}
-	printerStatus, err := query.FetchStatusWithTimeout(printerIp, 5*time.Second)
+	printerStatus, err := query.FetchStatus(printerIp)
 
 	if err != nil {
 		log.Fatalln(err)
