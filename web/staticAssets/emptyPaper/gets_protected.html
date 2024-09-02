@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.01 Transitional//EN' 'http://www.w3.org/TR/html4/loose.dtd'>
+<html lang='en_GB'>
+    <head>
+        <SCRIPT LANGUAGE='JavaScript'>
+            function checkPwd(form) {
+                pwd0 = form.pwd0.value;
+                pwd1 = form.pwd1.value;
+                pwd2 = form.pwd2.value;
+                pwd3 = form.pwd3.value;
+                if (/[^ -~]/.test(form.pwd2.value)) {
+                    alert('Sorry: passwords can only contain printable characters!')
+                    return false;
+                }
+                if (form.pwd2.value.length > 10) {
+                    alert('Sorry: passwords are limited to ten characters!')
+                    return false;
+                }
+                if (form.pwd1.value.length > 0 && (form.pwd0.value != form.pwd1.value)) {
+                    alert('Sorry: current password did not match!')
+                    return false;
+                }
+                if (form.pwd2.value.length > 0 && (form.pwd0.value != form.pwd1.value)) {
+                    alert('Sorry: current password did not match!')
+                    return false;
+                }
+                if (form.pwd2.value != form.pwd3.value) {
+                    alert('Sorry: new passwords do not match!')
+                    return false;
+                }
+                if (form.pwd3.value.length > 10) {
+                    alert('Sorry: passwords are limited to ten characters!')
+                    return false;
+                } else
+                    return true;
+            }
+        </script>
+    </head>
+    <body>
+        <STYLE TYPE='text/css'>
+            BODY {
+                FONT-FAMILY: verdana, arial;
+                COLOR: black;
+            }
+
+            P {
+                FONT-SIZE: 10pt;
+                color: #005500;
+                background-color: #ffffff;
+            }
+
+            H1 {
+                FONT-SIZE: 10pt;
+                background-color: #ffffff;
+            }
+
+            H2 {
+                FONT-SIZE: 10pt;
+                background-color: #ffffff;
+            }
+
+            H3 {
+                FONT-SIZE: 12pt;
+                background-color: #99ffff;
+            }
+        </STYLE>
+        <center>
+            <table width='320' border='5' cellpadding='4'>
+                <tr>
+                    <td>
+                        <center>
+                            <H3>Login</H3>
+                        </center>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <center>
+                            <p>
+                                This webpage is password protected.<br>
+                                <br>
+                                If you wish to change your password please fill in a new one.<br>
+                                (Password can be up to ten printable characters)<br>
+                                <br>Otherwise, just press Submit.
+                            </p>
+                        </center>
+                    </td>
+                </tr>
+                <form method='POST' action='configure_fgl.cgi' onSubmit='return checkPwd(this)'>
+                    <input type='hidden' name='pwd0' size='10' maxlength='10' value="printer">
+                    <tr>
+                        <td align='right'>
+                            <H1>
+                                Current Password: <input type='password' name=pwd1 size='10'>
+                            </H1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align='right'>
+                            <H1>
+                                New Password: <input type='password' name='pwd2' size='10'>
+                            </H1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align='right'>
+                            <H1>
+                                Confirm New Password: <input type='password' name='pwd3' size='10'>
+                            </H1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <center>
+                                <H1>
+                                    <input type='submit' value='Submit' name='P1'>
+                                </H1>
+                            </center>
+                        </td>
+                    </tr>
+                </form>
+            </table>
+    </body>
+</html>
