@@ -1,6 +1,6 @@
 module github.com/ui-kreinhard/boca-status-readout
 
-go 1.18
+go 1.20
 
 require (
 	github.com/antchfx/htmlquery v1.2.5 // indirect
