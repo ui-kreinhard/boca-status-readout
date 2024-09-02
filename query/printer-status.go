@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/antchfx/htmlquery"
 	"golang.org/x/net/html"
@@ -34,12 +35,16 @@ type PrinterStatus struct {
 	CutterJam   bool `json:"cutter_jam"`
 }
 
+var Username string = "boca"
+var Password string = "printer"
+
 func basicAuth(url string) (io.Reader, error) {
-	var username string = "boca"
-	var passwd string = "printer"
-	client := &http.Client{}
+	client := &http.Client{Timeout: 5 * time.Second}
 	req, err := http.NewRequest("GET", url, nil)
-	req.SetBasicAuth(username, passwd)
+	if err != nil {
+		return nil, err
+	}
+	req.SetBasicAuth(Username, Password)
 	resp, err := client.Do(req)
 	if err != nil {
 		return req.Body, err
